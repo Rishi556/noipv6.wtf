@@ -1,0 +1,27 @@
+<nav>
+    <p class="brand"><a href="#">NoIPv6.wtf?</a></p>
+</nav>
+<div class="pageContent">
+    <div class="otherSites">
+        <div class="header">
+            <h1>Top 100 Websites</h1>
+            <p class="remove">Can these websites be reached via IPv6?</p>
+        </div>
+        {{#each pingResults as |pingResult i|}}
+        <div class="pingResult">
+            <p>{{pingResult.number}}. {{pingResult.domain}}</p><p class="right"><i class="fa-solid fa-circle {{#if pingResult.ipv6}}green{{else}}red{{/if}}"></i></p>
+        </div>
+        {{/each}}
+    </div>
+    <div class="practiceWhatYouPreach">
+        <div class="header">
+            <h1>My Websites</h1>
+            <p class="remove">Practice what you preach - IPv6 Status of sites I run or help to operate.</p>
+        </div>
+        {{#each pingResultsMe as |pingResult i|}}
+            <div class="pingResult">
+                <p>{{pingResult.domain}}</p><p class="right"><i class="fa-solid fa-circle {{#if pingResult.ipv6}}green{{else}}red{{/if}}"></i></p>
+            </div>
+        {{/each}}
+    </div>
+</div>
