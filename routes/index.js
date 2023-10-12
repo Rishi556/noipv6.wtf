@@ -35,7 +35,7 @@ async function makeRequest(domain) {
       port: 80,
       path: '/',
       method: 'GET',
-      timeout: 3000,
+      timeout: 10000,
     }, (res) => {
       resolve(res);
     });
