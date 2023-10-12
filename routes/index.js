@@ -1,13 +1,8 @@
-const ping = require('ping');
 const express = require('express');
 const fs = require('fs');
 const path = require("path");
 const router = express.Router();
-
-const cfg = {
-  timeout: 10,
-  extra: ['-6'],
-};
+const http = require('http');
 
 const top1mAlexa = parseCSVToArray(path.join(__dirname, '..', 'routes','top-1m.csv'));
 
@@ -31,23 +26,58 @@ function stripToTop100Domains(alexaTop1m) {
 
 const top100Alexa = stripToTop100Domains(top1mAlexa);
 
-let pingResults = [];
+let requestResults = [];
+
+async function makeRequest(domain) {
+  return new Promise((resolve, reject) => {
+    const req = http.request({
+      hostname: domain,
+      port: 80,
+      path: '/',
+      method: 'GET',
+      timeout: 3000,
+    }, (res) => {
+      resolve(res);
+    });
+
+    req.on('error', (error) => {
+      reject(error);
+    });
+
+    req.on('timeout', () => {
+      req.destroy(new Error('ETIMEDOUT'));
+    });
+
+    req.end();
+  });
+}
 
 async function pingTop100() {
-  let tmpPingResults = [];
+  let tmpRequestResults = [];
 
-  // ping top 100 alexa sites
+  // request (ipv6 only) from top 100 alexa sites
   for (let i = 0; i < top100Alexa.length; i++) {
     let doesIpv6 = false;
     try {
-      let pingResponse = await ping.promise.probe(top100Alexa[i], cfg);
-      doesIpv6 = pingResponse.alive;
-    } catch (e) {}
+      // make an ipv6-only get request to the base url
+      console.log(`Pinging ${top100Alexa[i]}`);
 
-    tmpPingResults.push({domain: top100Alexa[i], ipv6: doesIpv6, number: i + 1});
+      const res = await makeRequest(top100Alexa[i]);
+
+      if (res.socket.remoteFamily === 'IPv6') {
+        doesIpv6 = true;
+      }
+
+    } catch (e) {
+        console.log(e);
+    }
+
+    tmpRequestResults.push({domain: top100Alexa[i], ipv6: doesIpv6, number: i + 1});
   }
 
-  pingResults = tmpPingResults;
+  console.log(tmpRequestResults, requestResults);
+
+  requestResults = tmpRequestResults;
 }
 
 setInterval(pingTop100, 1000 * 60 * 60 * 24);
@@ -55,8 +85,8 @@ setInterval(pingTop100, 1000 * 60 * 60 * 24);
 pingTop100();
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { pingResults: [...pingResults].slice(0, 100), pingResultsMe: [...pingResults].slice(100), title: "Top 100 Sites IPv6 Test | NoIPv6.wtf?" });
+router.get('/', function(req, res) {
+  res.render('index', { pingResults: [...requestResults].slice(0, 100), pingResultsMe: [...requestResults].slice(100), title: "Top 100 Sites IPv6 Test | NoIPv6.wtf?" });
 });
 
 module.exports = router;
