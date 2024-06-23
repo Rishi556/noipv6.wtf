@@ -6,12 +6,12 @@
     "start": "nodemon ./bin/www"
   },
   "dependencies": {
-    "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
-    "express": "~4.16.1",
+    "cookie-parser": "~1.4.6",
+    "debug": "~4.3.5",
+    "express": "~4.19.2",
     "hbs": "^4.2.0",
-    "http-errors": "~1.6.3",
-    "morgan": "~1.9.1",
-    "ping": "^0.4.2"
+    "http-errors": "~2.0.0",
+    "morgan": "~1.10.0",
+    "ping": "^0.4.4"
   }
 }
